@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineMatch AI — Smart Movie Recommendations</title>
+  <meta name="description" content="AI-powered movie recommendation tool using semantic vector embeddings and cosine similarity. Find similar movies and discover cinema tailored to your taste.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Glow Orbs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="7" x2="7" y2="7"></line>
+            <line x1="2" y1="17" x2="7" y2="17"></line>
+            <line x1="17" y1="17" x2="22" y2="17"></line>
+            <line x1="17" y1="7" x2="22" y2="7"></line>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Cine<span class="gradient-text">Match</span></span>
+          <span class="brand-tag">AI Recommender</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#discover" class="nav-link active">Discover</a>
+        <a href="#catalog" class="nav-link">Movie Library</a>
+        <button id="watchlist-toggle-btn" class="watchlist-btn" title="View Watchlist">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Watchlist</span>
+          <span class="badge" id="watchlist-badge">0</span>
+        </button>
+        <div class="api-status" id="api-status" title="Spring Boot Backend Status">
+          <span class="status-dot"></span>
+          <span class="status-label" id="status-label">Checking API...</span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero & Semantic Search Section -->
+  <main>
+    <section class="hero-section" id="discover">
+      <div class="hero-content">
+        <div class="pill-badge">
+          <span class="pill-sparkle">✨</span>
+          <span>Vector Similarity & AI Embeddings</span>
+        </div>
+        <h1 class="hero-title">
+          Describe Any Vibe, Theme, or Plot.<br>
+          <span class="gradient-text">Get Instant Recommendations.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Powered by Gemini text embeddings and high-dimensional cosine similarity. Explore 30 iconic global and Indian masterpieces.
+        </p>
+
+        <!-- Search Bar Form -->
+        <div class="search-box-wrapper">
+          <form id="recommendation-form" class="search-box">
+            <div class="search-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="e.g. Astronaut stranded in deep space fighting for survival..." 
+              autocomplete="off"
+              required
+            >
+            <button type="button" id="clear-search-btn" class="clear-btn" title="Clear input" style="display:none;">✕</button>
+            <button type="submit" class="submit-btn" id="search-btn">
+              <span class="btn-text">Find Matches</span>
+              <span class="btn-spinner" style="display:none;"></span>
+            </button>
+          </form>
+
+          <!-- Quick Suggestion Chips -->
+          <div class="query-chips">
+            <span class="chips-label">Try searching:</span>
+            <button type="button" class="chip" data-query="Astronaut stranded in space trying to survive">🚀 Space Survival</button>
+            <button type="button" class="chip" data-query="Mind bending reality and dreams inside dreams">🌀 Dream Heist</button>
+            <button type="button" class="chip" data-query="Father daughter sports underdog fighting odds">🤼 Sports Triumph</button>
+            <button type="button" class="chip" data-query="Underground street rap hip-hop Mumbai poverty">🎤 Hip-Hop Journey</button>
+            <button type="button" class="chip" data-query="Blind pianist trapped in murder and crime thriller">🎹 Suspense Mystery</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recommendation Results Section -->
+    <section class="results-section" id="results-section" style="display: none;">
+      <div class="container">
+        <div class="results-header">
+          <div class="results-header-text">
+            <span class="section-tag" id="results-tag">AI Matches</span>
+            <h2 class="section-title" id="results-title">Top Recommended Movies</h2>
+            <p class="section-subtitle" id="results-query-display"></p>
+          </div>
+          <button id="dismiss-results-btn" class="dismiss-btn" title="Close results">
+            <span>Dismiss</span> ✕
+          </button>
+        </div>
+
+        <div class="results-grid" id="results-container">
+          <!-- Dynamically inserted recommendation cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Catalog Section -->
+    <section class="catalog-section" id="catalog">
+      <div class="container">
+        <div class="catalog-header">
+          <div>
+            <span class="section-tag">Library</span>
+            <h2 class="section-title">Explore All Movies</h2>
+            <p class="section-subtitle">Browse through our collection. Click "Find Similar" on any title for semantic recommendations.</p>
+          </div>
+
+          <!-- Catalog Controls: Filter & Live Filter Input -->
+          <div class="catalog-controls">
+            <div class="catalog-search-wrapper">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="catalog-filter-input" placeholder="Filter title in library...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Genre Category Filter Pills -->
+        <div class="genre-filter-bar" id="genre-filter-bar">
+          <button class="filter-pill active" data-genre="all">All Movies (30)</button>
+          <button class="filter-pill" data-genre="Sci-Fi">Sci-Fi & Space</button>
+          <button class="filter-pill" data-genre="Drama">Drama & Inspiring</button>
+          <button class="filter-pill" data-genre="Crime">Crime & Thriller</button>
+          <button class="filter-pill" data-genre="Action">Action & Adventure</button>
+          <button class="filter-pill" data-genre="Bollywood">Bollywood Gems</button>
+          <button class="filter-pill" data-genre="Animation">Animation</button>
+        </div>
+
+        <!-- Movie Catalog Grid -->
+        <div class="catalog-grid" id="catalog-container">
+          <!-- Dynamically populated 30 cards -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Movie Detail Modal -->
+  <div class="modal-overlay" id="movie-modal" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="modal-close-btn" title="Close modal">✕</button>
+      <div class="modal-body" id="modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Watchlist Sidebar Drawer -->
+  <div class="watchlist-drawer" id="watchlist-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <h3>Your Saved Movies</h3>
+      </div>
+      <button class="drawer-close-btn" id="drawer-close-btn">✕</button>
+    </div>
+    <div class="drawer-content" id="drawer-content">
+      <!-- Items inserted dynamically -->
+    </div>
+    <div class="drawer-footer">
+      <button id="clear-watchlist-btn" class="clear-watchlist-btn">Clear Watchlist</button>
+    </div>
+  </div>
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="brand">
+          <span class="brand-title">Cine<span class="gradient-text">Match</span></span>
+        </div>
+        <p class="footer-desc">
+          Intelligent semantic movie recommendation system built with Spring Boot, Spring AI, Vector Embeddings & Modern Web Design.
+        </p>
+      </div>
+      <div class="footer-right">
+        <span class="tech-tag">Spring Boot 3</span>
+        <span class="tech-tag">Google Gemini Embeddings</span>
+        <span class="tech-tag">Cosine Similarity</span>
+        <span class="tech-tag">Vanilla JS & CSS</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
