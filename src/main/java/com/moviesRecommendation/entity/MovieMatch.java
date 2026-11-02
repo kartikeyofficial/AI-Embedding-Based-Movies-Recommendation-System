@@ -4,7 +4,7 @@ package com.moviesRecommendation.entity;
 public class MovieMatch {
     private String title;
     private String description;
-//    private double match;
+    private double match;
 
     public MovieMatch(String title, String description, double match) {
         this.title = title;
